@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Johnny's Burgers - Pedidos en Línea</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 flex flex-col min-h-full transition-colors duration-200">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-30 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-brand-600 flex items-center justify-center text-white font-black text-xl shadow-md">
+                    JB
+                </div>
+                <div>
+                    <h1 class="font-black text-xl tracking-tight text-gray-900 dark:text-white leading-none">Johnny's <span class="text-brand-600">Burgers</span></h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Saltillo, Coahuila</p>
+                </div>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="flex items-center gap-3">
+                <!-- Theme Toggle -->
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                    <i data-lucide="moon" id="themeIcon" class="w-5 h-5"></i>
+                </button>
+
+                <!-- Cart Button Header -->
+                <button onclick="toggleCartModal()" class="relative bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2 rounded-full flex items-center gap-2 shadow-md hover:shadow-lg transition">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    <span class="hidden sm:inline">Carrito</span>
+                    <span id="cartBadge" class="bg-white text-brand-600 font-bold text-xs px-2 py-0.5 rounded-full hidden">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+        <!-- Hero Banner -->
+        <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-red-600 to-amber-600 text-white p-6 sm:p-10 mb-8 shadow-xl">
+            <div class="relative z-10 max-w-lg">
+                <span class="bg-white/20 backdrop-blur-md text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">¡Sabor Artesanal!</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold mb-2">Las mejores hamburguesas de la ciudad</h2>
+                <p class="text-white/90 text-sm sm:text-base mb-6">Pide a domicilio de forma rápida y sencilla. Entrega caliente hasta tu puerta.</p>
+                <a href="#menu" class="inline-flex items-center gap-2 bg-white text-gray-900 font-bold px-5 py-2.5 rounded-xl hover:bg-gray-100 transition shadow-lg text-sm sm:text-base">
+                    Ver Menú <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </div>
+            <div class="absolute -right-10 -bottom-10 opacity-20 sm:opacity-30 pointer-events-none">
+                <i data-lucide="utensils" class="w-80 h-80"></i>
+            </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div id="menu" class="space-y-6 mb-8">
+            <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <!-- Search Bar -->
+                <div class="relative w-full sm:w-72">
+                    <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar platillo..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition text-sm">
+                </div>
+
+                <!-- Categories -->
+                <div id="categoriesContainer" class="flex gap-2 overflow-x-auto w-full sm:w-auto no-scrollbar py-1">
+                    <!-- Dynamic categories generated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Dynamic products loaded here -->
+        </div>
+
+        <!-- Empty Search State -->
+        <div id="emptySearch" class="hidden text-center py-16">
+            <i data-lucide="search-x" class="w-16 h-16 mx-auto text-gray-400 mb-4"></i>
+            <h3 class="text-lg font-bold text-gray-700 dark:text-gray-300">No encontramos ningún producto</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Intenta buscando con otra palabra o categoría.</p>
+        </div>
+    </main>
+
+    <!-- Floating Cart Button (Mobile) -->
+    <div class="fixed bottom-6 right-6 z-20 sm:hidden">
+        <button onclick="toggleCartModal()" class="relative bg-brand-600 hover:bg-brand-700 text-white font-bold p-4 rounded-full shadow-2xl flex items-center justify-center transition">
+            <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+            <span id="floatingCartBadge" class="absolute -top-1 -right-1 bg-amber-400 text-gray-900 font-extrabold text-xs w-6 h-6 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900 hidden">0</span>
+        </button>
+    </div>
+
+    <!-- Modal / Slide-over Cart & Checkout -->
+    <div id="cartModal" class="fixed inset-0 z-50 hidden overflow-hidden bg-black/60 backdrop-blur-sm transition-opacity">
+        <div class="absolute inset-0" onclick="toggleCartModal()"></div>
+
+        <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div class="w-screen max-w-md bg-white dark:bg-gray-800 shadow-2xl flex flex-col">
+                
+                <!-- Cart Header -->
+                <div class="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-5 h-5 text-brand-600"></i>
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-white" id="cartModalTitle">Tu Pedido</h2>
+                    </div>
+                    <button onclick="toggleCartModal()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- VIEW 1: CART ITEMS -->
+                <div id="cartItemsView" class="flex-grow flex flex-col overflow-hidden">
+                    <div id="cartList" class="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4 divide-y divide-gray-100 dark:divide-gray-700">
+                        <!-- Dynamic Cart items -->
+                    </div>
+
+                    <!-- Cart Summary & Actions -->
+                    <div id="cartSummary" class="border-t border-gray-100 dark:border-gray-700 p-4 sm:p-6 bg-gray-50 dark:bg-gray-800/50 space-y-3">
+                        <div class="space-y-1.5 text-sm text-gray-600 dark:text-gray-400">
+                            <div class="flex justify-between">
+                                <span>Subtotal</span>
+                                <span id="cartSubtotal" class="font-medium text-gray-900 dark:text-gray-100">$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Envío</span>
+                                <span id="cartShipping" class="font-medium text-gray-900 dark:text-gray-100">$35.00</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500">
+                                <span>Impuestos (16%)</span>
+                                <span id="cartTaxes">$0.00</span>
+                            </div>
+                            <div class="flex justify-between text-base font-black text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-700">
+                                <span>Total</span>
+                                <span id="cartTotal" class="text-brand-600">$0.00</span>
+                            </div>
+                        </div>
+
+                        <button id="checkoutBtn" onclick="goToCheckout()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                            <span>Proceder al Pago</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: CHECKOUT FORM -->
+                <div id="checkoutView" class="flex-grow flex flex-col overflow-hidden hidden">
+                    <div class="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4">
+                        <button onclick="backToCart()" class="text-xs text-brand-600 hover:underline font-semibold flex items-center gap-1 mb-2">
+                            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Volver al carrito
+                        </button>
+
+                        <h3 class="text-md font-bold text-gray-900 dark:text-white border-b pb-2 dark:border-gray-700">Datos de Entrega</h3>
+
+                        <form id="orderForm" onsubmit="submitOrder(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Nombre Completo *</label>
+                                <input type="text" id="customerName" required placeholder="Ej. Juan Pérez" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Teléfono WhatsApp *</label>
+                                <input type="tel" id="customerPhone" required placeholder="Ej. 8441234567" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Dirección de Entrega *</label>
+                                <textarea id="customerAddress" required rows="2" placeholder="Calle, Número, Colonia, Referencias..." class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Método de Pago *</label>
+                                <select id="paymentMethod" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                    <option value="Efectivo">Efectivo contra entrega</option>
+                                    <option value="Tarjeta">Tarjeta (Terminal al entregar)</option>
+                                    <option value="Transferencia">Transferencia SPEI</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Notas Adicionales</label>
+                                <input type="text" id="orderNotes" placeholder="Ej. Sin cebolla, tocar timbre verde..." class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            </div>
+
+                            <div class="pt-4">
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                                    <span>Enviar Pedido por WhatsApp</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Products Database
+        const PRODUCTS = [
+            { id: 1, name: "Johnny Classic Burger", category: "Hamburguesas", price: 139, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&q=80", description: "Carne de res 180g, queso cheddar, lechuga, jitomate y salsa especial Johnny." },
+            { id: 2, name: "BBQ Bacon Monster", category: "Hamburguesas", price: 169, image: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f6?w=500&q=80", description: "Doble carne, doble tocino crujiente, aros de cebolla y salsa BBQ artesanal." },
+            { id: 3, name: "Spicy Chicken Crunch", category: "Hamburguesas", price: 145, image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=500&q=80", description: "Pechuga de pollo empanizada crujiente, queso suizo, pepinillos y mayonesa picante." },
+            { id: 4, name: "Papas Ajo & Romero", category: "Complementos", price: 59, image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500&q=80", description: "Papas sazonadas con ajo rostizado, romero fresco y parmesano." },
+            { id: 5, name: "Aros de Cebolla Crunch", category: "Complementos", price: 65, image: "https://images.unsplash.com/photo-1639024471283-03518883512d?w=500&q=80", description: "Crujientes aros de cebolla empanizados servidos con aderezo Ranch." },
+            { id: 6, name: "Malteada de Fresa & Oreo", category: "Bebidas", price: 75, image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=500&q=80", description: "Helado cremoso de fresa mezclado con trozos de galleta Oreo y crema batida." },
+            { id: 7, name: "Refresco 600ml", category: "Bebidas", price: 35, image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500&q=80", description: "Coca-Cola, Sprite, Fanta o Sidral Mundet bien frío." },
+            { id: 8, name: "Brownie con Helado", category: "Postres", price: 85, image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=500&q=80", description: "Brownie tibio de chocolate fudge con una bola de helado de vainilla." }
+        ];
+
+        const CATEGORIES = ["Todos", "Hamburguesas", "Complementos", "Bebidas", "Postres"];
+        const SHIPPING_FEE = 35.00;
+        const TAX_RATE = 0.16;
+
+        // App State
+        let cart = [];
+        let activeCategory = "Todos";
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            renderCategories();
+            renderProducts();
+            updateCartUI();
+            lucide.createIcons();
+            
+            // System Dark Mode Check
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+            updateThemeIcon();
+        });
+
+        // Theme Toggle
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeIcon');
+            const isDark = document.documentElement.classList.contains('dark');
+            icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+
+        // Render Categories Filters
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = CATEGORIES.map(cat => `
+                <button onclick="setCategory('${cat}')" class="px-4 py-2 rounded-xl text-sm font-semibold transition whitespace-nowrap ${
+                    activeCategory === cat 
+                    ? 'bg-brand-600 text-white shadow-md' 
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                }">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(category) {
+            activeCategory = category;
+            renderCategories();
+            filterProducts();
+        }
+
+        // Filter and Render Products
+        function filterProducts() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const filtered = PRODUCTS.filter(p => {
+                const matchesCategory = activeCategory === "Todos" || p.category === activeCategory;
+                const matchesSearch = p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query);
+                return matchesCategory && matchesSearch;
+            });
+
+            renderProducts(filtered);
+        }
+
+        function renderProducts(items = PRODUCTS) {
+            const grid = document.getElementById('productGrid');
+            const empty = document.getElementById('emptySearch');
+
+            if (items.length === 0) {
+                grid.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            grid.innerHTML = items.map(product => `
+                <div class="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition border border-gray-100 dark:border-gray-700 flex flex-col group">
+                    <div class="relative overflow-hidden h-48">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <span class="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md text-gray-900 dark:text-white font-black text-sm px-2.5 py-1 rounded-lg shadow-md">
+                            $${product.price.toFixed(2)}
+                        </span>
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <span class="text-xs font-semibold text-brand-600 uppercase tracking-wider mb-1">${product.category}</span>
+                        <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-1">${product.name}</h3>
+                        <p class="text-gray-500 dark:text-gray-400 text-xs line-clamp-2 mb-4 flex-grow">${product.description}</p>
+                        <button onclick="addToCart(${product.id})" class="w-full bg-gray-900 hover:bg-brand-600 dark:bg-gray-700 dark:hover:bg-brand-600 text-white font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 text-sm shadow-sm">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Agregar al Carrito</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        // Cart Actions
+        function addToCart(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            const existing = cart.find(item => item.id === productId);
+
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+
+            updateCartUI();
+        }
+
+        function updateQuantity(productId, delta) {
+            const item = cart.find(i => i.id === productId);
+            if (!item) return;
+
+            item.quantity += delta;
+            if (item.quantity <= 0) {
+                cart = cart.filter(i => i.id !== productId);
+            }
+
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            // Badges
+            const badge = document.getElementById('cartBadge');
+            const floatingBadge = document.getElementById('floatingCartBadge');
+
+            if (count > 0) {
+                badge.innerText = count;
+                badge.classList.remove('hidden');
+                floatingBadge.innerText = count;
+                floatingBadge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                floatingBadge.classList.add('hidden');
+            }
+
+            // Calculations
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const taxes = subtotal * TAX_RATE;
+            const total = subtotal > 0 ? subtotal + taxes + SHIPPING_FEE : 0;
+
+            document.getElementById('cartSubtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('cartTaxes').innerText = `$${taxes.toFixed(2)}`;
+            document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
+
+            // Render Cart List
+            const cartList = document.getElementById('cartList');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+
+            if (cart.length === 0) {
+                cartList.innerHTML = `
+                    <div class="text-center py-12">
+                        <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto text-gray-300 mb-2"></i>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Tu carrito está vacío</p>
+                    </div>
+                `;
+                checkoutBtn.disabled = true;
+                checkoutBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                checkoutBtn.disabled = false;
+                checkoutBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                cartList.innerHTML = cart.map(item => `
+                    <div class="pt-4 first:pt-0 flex items-center justify-between gap-3">
+                        <img src="${item.image}" alt="${item.name}" class="w-14 h-14 object-cover rounded-xl flex-shrink-0">
+                        <div class="flex-grow min-w-0">
+                            <h4 class="font-bold text-xs sm:text-sm text-gray-800 dark:text-gray-100 truncate">${item.name}</h4>
+                            <span class="text-xs text-brand-600 font-semibold">$${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                            <button onclick="updateQuantity(${item.id}, -1)" class="w-6 h-6 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded transition">
+                                <i data-lucide="minus" class="w-3 h-3"></i>
+                            </button>
+                            <span class="text-xs font-bold w-4 text-center text-gray-800 dark:text-gray-100">${item.quantity}</span>
+                            <button onclick="updateQuantity(${item.id}, 1)" class="w-6 h-6 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded transition">
+                                <i data-lucide="plus" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            lucide.createIcons();
+        }
+
+        // Modal Controls
+        function toggleCartModal() {
+            const modal = document.getElementById('cartModal');
+            modal.classList.toggle('hidden');
+            backToCart();
+        }
+
+        function goToCheckout() {
+            if (cart.length === 0) return;
+            document.getElementById('cartItemsView').classList.add('hidden');
+            document.getElementById('checkoutView').classList.remove('hidden');
+            document.getElementById('cartModalTitle').innerText = 'Checkout';
+        }
+
+        function backToCart() {
+            document.getElementById('checkoutView').classList.add('hidden');
+            document.getElementById('cartItemsView').classList.remove('hidden');
+            document.getElementById('cartModalTitle').innerText = 'Tu Pedido';
+        }
+
+        // Send Order via WhatsApp
+        function submitOrder(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('customerName').value;
+            const phone = document.getElementById('customerPhone').value;
+            const address = document.getElementById('customerAddress').value;
+            const payment = document.getElementById('paymentMethod').value;
+            const notes = document.getElementById('orderNotes').value;
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const taxes = subtotal * TAX_RATE;
+            const total = subtotal + taxes + SHIPPING_FEE;
+
+            let message = `🍔 *NUEVO PEDIDO - JOHNNY'S BURGERS*\n`;
+            message += `-----------------------------------\n`;
+            message += `👤 *Cliente:* ${name}\n`;
+            message += `📞 *Teléfono:* ${phone}\n`;
+            message += `📍 *Dirección:* ${address}\n`;
+            message += `💳 *Método de Pago:* ${payment}\n`;
+            if (notes) message += `📝 *Notas:* ${notes}\n`;
+            message += `-----------------------------------\n`;
+            message += `🛒 *DETALLE DEL PEDIDO:*\n\n`;
+
+            cart.forEach(item => {
+                message += `• ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
+            });
+
+            message += `\n-----------------------------------\n`;
+            message += `Subtotal: $${subtotal.toFixed(2)}\n`;
+            message += `Envío: $${SHIPPING_FEE.toFixed(2)}\n`;
+            message += `IVA (16%): $${taxes.toFixed(2)}\n`;
+            message += `*TOTAL A PAGAR: $${total.toFixed(2)}*\n`;
+            message += `-----------------------------------`;
+
+            const restaurantPhoneNumber = "528441234567"; // Número del negocio
+            const encodedUrl = `https://wa.me/${restaurantPhoneNumber}?text=${encodeURIComponent(message)}`;
+
+            window.open(encodedUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
